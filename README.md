@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">TurboLite — Photo to Illustration on CPU</h1>
+  <h1 align="center">photo-to-cartoon</h1>
   <p align="center">
     <strong>Turn any photo into stunning cartoon art in ~16 seconds. No GPU. No cloud. No subscription.</strong>
   </p>
@@ -13,17 +13,17 @@
 
 ---
 
-**TurboLite** is a lightweight, CPU-only photo-to-illustration engine that transforms ordinary photographs into beautiful, hand-drawn-style cartoon illustrations — in seconds, on any machine.
+**photo-to-cartoon** is a lightweight, CPU-only engine that transforms ordinary photographs into beautiful, hand-drawn-style cartoon illustrations — in seconds, on any machine.
 
 No expensive GPU. No monthly API subscription. No large language model or vision model. Just a single Python script, three tiny dependencies, and results that look like they were drawn by a professional illustrator.
 
-> **This is a preview repo.** The inference code and sample results are public so you can see exactly what TurboLite produces. **Model weights are distributed separately** — visit [thearifoffice.com](https://www.thearifoffice.com) or [open an issue](../../issues) to request access.
+> **This is a preview repo.** The inference code and sample results are public so you can see exactly what photo-to-cartoon produces. **Model weights are distributed separately** — visit [thearifoffice.com](https://www.thearifoffice.com) or [open an issue](../../issues) to request access.
 
 ---
 
 ## ✦ Results
 
-Every image below is a real output. Left: original photo. Right: TurboLite output. No cherry-picking, no post-processing, no manual touch-ups.
+Every image below is a real output. Left: original photo. Right: photo-to-cartoon output. No cherry-picking, no post-processing, no manual touch-ups.
 
 ### Family & Group Portraits
 
@@ -63,14 +63,13 @@ Every image below is a real output. Left: original photo. Right: TurboLite outpu
 
 ---
 
-## ⚡ Why TurboLite?
+## ⚡ Why photo-to-cartoon?
 
-| | TurboLite | Typical AI Art Tools |
+| | photo-to-cartoon | Typical AI Art Tools |
 |---|---|---|
 | **GPU required** | No — runs on any CPU | Yes — needs CUDA GPU |
 | **Cloud / API** | No — 100% offline | Yes — sends your photos to a server |
 | **Subscription** | No — one-time setup | $10–50/month |
-| **Large model download** | ~3.3 GB total | 6–12 GB+ (Stable Diffusion, etc.) |
 | **Speed (1024px)** | ~16 seconds | 30–90+ seconds (even on GPU) |
 | **Privacy** | Your photos never leave your machine | Photos uploaded to third-party servers |
 | **Dependencies** | 3 Python packages | CUDA, PyTorch, dozens of packages |
@@ -82,7 +81,7 @@ Every image below is a real output. Left: original photo. Right: TurboLite outpu
 - **Blazing fast** — 16–20 seconds per photo at 1024px on a mid-range CPU (Intel i5-10400)
 - **Lightweight** — Only 3 dependencies: `openvino`, `numpy`, `pillow`
 - **Batch processing** — Point it at a folder, process hundreds of photos unattended
-- **High fidelity** — Distilled from a FLUX-quality model; virtually indistinguishable from the full-size original (LPIPS difference: 0.034)
+- **High fidelity** — Virtually indistinguishable from full-precision models (LPIPS difference: 0.034)
 - **Production quality** — Handles portraits, landscapes, groups, close-ups, indoor/outdoor scenes
 - **Privacy-first** — Everything runs locally. Your photos never leave your computer
 
@@ -100,19 +99,19 @@ That's it. Three packages: `openvino`, `numpy`, `pillow`.
 
 ### 2. Get model weights
 
-Model weights are not included in this repository. Visit **[thearifoffice.com](https://www.thearifoffice.com)** to request access.
+Model weights are not included in this repository.
 
-Once you have the weights, place them in the `weights/` folder:
+**Visit [thearifoffice.com](https://www.thearifoffice.com) or [open an issue](../../issues) to request access.**
+
+Once you receive the weights, simply extract them into the `weights/` folder at the project root. The folder should look like this:
 
 ```
-weights/
-├── small_encoder.xml
-├── small_encoder.bin     (22 MB)
-├── unet.xml
-├── unet.bin              (3.3 GB)
-├── small_decoder.xml
-├── small_decoder.bin     (36 MB)
-└── scaling_factor.txt
+photo-to-cartoon/
+├── run_cpu_lite.py
+├── requirements.txt
+├── weights/          ← place all received weight files here
+│   └── ...
+└── ...
 ```
 
 ### 3. Run
@@ -154,51 +153,36 @@ Tested on **Intel Core i5-10400** (6 cores, 12 threads) — a standard desktop C
 
 ### Speed
 
-| Image Size | Time per Photo | Encoder | UNet | Decoder |
-|---|---|---|---|---|
-| 1024 × 680 | **16–20 s** | 0.5 s | 12–14 s | 1.5 s |
-| 680 × 1024 | **17–18 s** | 0.5 s | 12–13 s | 1.4 s |
+| Image Size | Time per Photo |
+|---|---|
+| 1024 × 680 | **16–20 s** |
+| 680 × 1024 | **17–18 s** |
 
-> The first photo of each new aspect ratio takes 2–3 s longer (one-time model reshape). Subsequent photos of the same size are faster.
+> The first photo of each new aspect ratio takes 2–3 s longer (one-time warm-up). Subsequent photos of the same size are faster.
 
 ### Memory Usage
 
-| Configuration | Peak RAM |
+| | Peak RAM |
 |---|---|
-| TurboLite (this version) | **~8 GB** |
-| Full model (PyTorch) | ~11 GB |
-| Full model (OpenVINO) | ~13 GB |
+| **photo-to-cartoon** | **~8 GB** |
+| Comparable full-precision models | 11–13 GB |
 
-### Quality vs Full Model
+### Quality
 
-Measured on 99 held-out test images against FLUX ground-truth targets:
+Measured on 99 held-out test images:
 
-| Metric | Full Model | TurboLite |
+| Metric | Full-Precision Model | photo-to-cartoon |
 |---|---|---|
 | LPIPS (perceptual distance) | 0.2197 | **0.2198** |
 | L1 (pixel distance) | 0.2008 | **0.2008** |
 
-> **TurboLite is perceptually identical to the full model.** The LPIPS difference between TurboLite and the full model is just **0.034** — imperceptible to the human eye.
-
----
-
-## 🏗️ Architecture
-
-TurboLite uses a distilled architecture for maximum CPU efficiency:
-
-| Component | Size | Role |
-|---|---|---|
-| **Small Encoder** | 22 MB | Compresses the input photo to a latent representation |
-| **UNet** | 3.3 GB | The core diffusion network — performs the style transfer in one step |
-| **Small Decoder** | 36 MB | Reconstructs the final illustration from the latent + original photo |
-
-The encoder and decoder are compact student networks, distilled from a much larger VAE to match its output within LPIPS 0.034. The UNet performs the actual artistic transformation in a **single forward pass** — no iterative denoising, no scheduler, no classifier-free guidance.
+> **Virtually identical quality to full-precision models** — the perceptual difference is just **0.034 LPIPS**, imperceptible to the human eye.
 
 ---
 
 ## 🤝 Get Access
 
-**TurboLite is a product of [The Arif Office](https://www.thearifoffice.com).**
+**photo-to-cartoon is a product of [The Arif Office](https://www.thearifoffice.com).**
 
 This repository contains the full inference code and sample results. Model weights are provided separately to authorized users.
 
@@ -228,7 +212,7 @@ This repository contains the full inference code and sample results. Model weigh
 
 ## 🌟 Star This Repo
 
-If TurboLite catches your eye, **give it a star** — it helps others discover CPU-friendly AI art tools and motivates continued development.
+If photo-to-cartoon catches your eye, **give it a star** — it helps others discover CPU-friendly AI art tools and motivates continued development.
 
 **[Follow the author](../../)** for updates on new styles, speed improvements, and upcoming features.
 
@@ -243,5 +227,5 @@ If TurboLite catches your eye, **give it a star** — it helps others discover C
 ---
 
 <sub>
-<strong>Keywords:</strong> photo to cartoon, photo to illustration, AI art CPU, image stylization, pix2pix turbo, OpenVINO inference, CPU image processing, offline AI art generator, no GPU image generation, cartoon filter AI, photo to anime, portrait illustration AI, lightweight AI model, edge AI art, local AI image processing, privacy-first AI, batch photo cartoonizer, photo to drawing AI, neural style transfer CPU, fast image to cartoon converter
+<strong>Keywords:</strong> photo to cartoon, photo to illustration, AI art CPU, image stylization, CPU image processing, offline AI art generator, no GPU image generation, cartoon filter AI, photo to anime, portrait illustration AI, lightweight AI model, edge AI art, local AI image processing, privacy-first AI, batch photo cartoonizer, photo to drawing AI, neural style transfer CPU, fast image to cartoon converter, photo to cartoon without GPU, free photo to cartoon AI, turn photo into cartoon locally
 </sub>
