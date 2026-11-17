@@ -1,0 +1,21 @@
+# Model weights (not distributed — contact author for access)
+weights/
+
+# Python
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+
+results/
+test_results/
